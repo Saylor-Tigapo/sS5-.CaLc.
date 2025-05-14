@@ -84,7 +84,7 @@
     /* Slider styling */
     .slider-wrapper {
       position: relative;
-      margin: 40px 0;
+      margin: 40px 0 60px 0; /* extra space after slider */
     }
     input[type="range"] {
       -webkit-appearance: none;
@@ -130,11 +130,37 @@
       color: #999;
       top: 20px;
     }
-    /* Special tick marks (min & max) – shown above the slider */
+    /* Special tick marks (min & max): 
+       Placed higher, underlined, with a connector line and dot.
+    */
     .slider-mark.special {
       color: #d9534f;
       font-weight: bold;
-      top: -25px;
+      top: -45px; /* raised higher than before */
+      border-bottom: 1px solid #d9534f;  /* underline at bottom of text */
+      padding-bottom: 2px;
+      position: absolute;
+    }
+    .slider-mark.special::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 100%; /* starts right at the bottom of the label */
+      transform: translateX(-50%);
+      width: 1px;
+      height: 20px; /* connector line height */
+      background: #d9534f;
+    }
+    .slider-mark.special::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 20px); /* dot at end of connector line */
+      transform: translateX(-50%);
+      width: 6px;
+      height: 6px;
+      background: #d9534f;
+      border-radius: 50%;
     }
     /* Drop-down calculation info styling */
     #calcContainer {
@@ -148,7 +174,7 @@
     #calcContainer p { 
       margin-bottom: 10px; 
     }
-    /* Subtitle styling for min/max per reader */
+    /* Subtitle styling for min/max per reader details */
     .subinfo {
       margin-left: 20px;
       font-style: italic;
@@ -222,7 +248,7 @@
   </div>
 
   <script>
-    // Helper: format tick values; abbreviate over 1000 with "k"
+    // Helper: format tick values; abbreviate values over 1000 with "k"
     function formatTick(value) {
       if (value < 1000) {
         return `$${value}`;
@@ -233,26 +259,26 @@
     }
 
     function updateCalculator() {
-      // Retrieve number of readers and validate.
+      // Retrieve and validate the number of readers
       let numReaders = parseInt(document.getElementById('numReaders').value);
       if (isNaN(numReaders) || numReaders < 1) {
         numReaders = 1;
         document.getElementById('numReaders').value = 1;
       }
 
-      // Pricing parameters.
+      // Pricing parameters
       const feePercentage = 0.05;
       const minPerReader = 10;
       const maxPerReader = 20;
 
-      // Compute revenue thresholds where fee per reader caps are reached.
+      // Compute revenue thresholds where fee per reader caps apply
       let minThreshold = (minPerReader * numReaders) / feePercentage;
       let maxThreshold = (maxPerReader * numReaders) / feePercentage;
 
       // Determine scaling based on reader count:
-      // ≤ 49: extension = $500, tick = $500.
-      // 50–99: extension = $1,000, tick = $1,000.
-      // ≥ 100: base extension/tick = $2,000 (for 100–149); every extra 50 adds $1,000.
+      // ≤ 49: extension = $500, tick interval = $500.
+      // 50–99: extension = $1,000, tick interval = $1,000.
+      // ≥ 100: base extension/tick = $2,000 (for 100–149), plus $1,000 for every extra 50 readers.
       let rangeExtension = 500;
       let tickInterval = 500;
       if (numReaders < 50) {
@@ -267,7 +293,7 @@
         tickInterval = 2000 + extraGroups * 1000;
       }
 
-      // Set slider range dynamically.
+      // Dynamically set slider range.
       let sliderMin = minThreshold - rangeExtension;
       let sliderMax = maxThreshold + rangeExtension;
       if (sliderMin < 0) sliderMin = 0;
@@ -275,7 +301,7 @@
       slider.min = sliderMin;
       slider.max = sliderMax;
 
-      // Ensure current slider value is within bounds.
+      // Ensure the current slider value is within bounds.
       let currentRevenue = parseFloat(slider.value);
       if (currentRevenue < sliderMin) {
         currentRevenue = sliderMin;
@@ -285,7 +311,7 @@
         slider.value = sliderMax;
       }
 
-      // Calculate fee per reader based on 5% of monthly revenue.
+      // Calculate fee per reader (5% of revenue divided by the number of readers, then capped).
       let feePerReader = (currentRevenue * feePercentage) / numReaders;
       if (feePerReader < minPerReader) feePerReader = minPerReader;
       if (feePerReader > maxPerReader) feePerReader = maxPerReader;
