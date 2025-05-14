@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Software and Service Fee Calculator</title>
+  <title>Lease & Pricing Calculators</title>
   <style>
     /* Base styling */
     body {
@@ -15,16 +15,14 @@
     }
     .container {
       max-width: 900px;
-      margin: 0 auto;
+      margin: 20px auto;
       background: #fff;
       padding: 30px;
       border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
     /* Center header and text */
-    h1,
-    .subtitle,
-    .explanation {
+    h1, .subtitle, .explanation {
       text-align: center;
     }
     h1 {
@@ -42,21 +40,7 @@
       margin-bottom: 20px;
       line-height: 1.4;
     }
-    /* Centered Readers Input */
-    .reader-input {
-      margin-bottom: 20px;
-      text-align: center;
-      font-size: 1em;
-    }
-    .reader-input label {
-      font-weight: bold;
-      margin-right: 10px;
-    }
-    .reader-input input[type="number"] {
-      width: 60px;
-      padding: 5px;
-    }
-    /* Top stats row */
+    /* Stats header for each calculator */
     .stats-display {
       display: flex;
       justify-content: space-between;
@@ -81,7 +65,53 @@
       font-weight: bold;
       color: #007bff;
     }
-    /* Slider styling */
+    /* Hardware Lease Table styling */
+    table.hardware-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    table.hardware-table th,
+    table.hardware-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    table.hardware-table th {
+      background-color: #f2f2f2;
+      text-align: left;
+    }
+    .description-row {
+      display: none;
+      background-color: #f9f9f9;
+    }
+    .toggle-arrow {
+      cursor: pointer;
+      margin-left: 5px;
+      font-size: 0.9em;
+    }
+    /* Button styling */
+    .calc-button {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    .calc-button:hover {
+      background-color: #0056b3;
+    }
+    /* Disclaimer text styling */
+    .disclaimer {
+      text-align: center;
+      font-size: 0.8em;
+      color: #888;
+      margin-top: 10px;
+    }
+    /* Slider styling (Software Fee Calculator remains unchanged) */
     .slider-wrapper {
       position: relative;
       margin: 40px 0 60px 0; /* extra space after slider */
@@ -112,106 +142,199 @@
       cursor: pointer;
       border: none;
     }
-    /* Slider tick marks container */
+    /* Slider tick marks from Software Fee Calculator */
     .slider-marks {
       position: absolute;
       width: 100%;
       pointer-events: none;
     }
-    /* Slider tick mark styles */
     .slider-mark {
       position: absolute;
       text-align: center;
       font-size: 0.75em;
       transform: translateX(-50%);
     }
-    /* Regular tick marks (non-special) – shown below the slider */
     .slider-mark.normal {
       color: #999;
       top: 20px;
     }
-    /* Special tick marks (min & max): 
-       Placed higher, underlined, with a connector line and dot.
-    */
     .slider-mark.special {
       color: #d9534f;
       font-weight: bold;
-      top: -45px; /* raised higher than before */
-      border-bottom: 1px solid #d9534f;  /* underline at bottom of text */
+      top: -25px;
+      border-bottom: 1px solid #d9534f;
       padding-bottom: 2px;
-      position: absolute;
     }
     .slider-mark.special::after {
       content: "";
       position: absolute;
       left: 50%;
-      top: 100%; /* starts right at the bottom of the label */
+      top: 100%;
       transform: translateX(-50%);
       width: 1px;
-      height: 20px; /* connector line height */
+      height: 20px;
       background: #d9534f;
     }
     .slider-mark.special::before {
       content: "";
       position: absolute;
       left: 50%;
-      top: calc(100% + 20px); /* dot at end of connector line */
+      top: calc(100% + 20px);
       transform: translateX(-50%);
       width: 6px;
       height: 6px;
       background: #d9534f;
       border-radius: 50%;
     }
-    /* Drop-down calculation info styling */
-    #calcContainer {
-      display: none;
-      font-size: 0.9em;
-      margin-top: 20px;
-      text-align: left;
-      border-top: 1px solid #ddd;
-      padding-top: 20px;
-    }
-    #calcContainer p { 
-      margin-bottom: 10px; 
-    }
-    /* Subtitle styling for min/max per reader details */
-    .subinfo {
-      margin-left: 20px;
-      font-style: italic;
-      color: #555;
-    }
-    #toggleCalcButton {
-      display: block;
-      margin: 20px auto;
-      padding: 10px 20px;
-      background-color: #007bff;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 1em;
-    }
-    #toggleCalcButton:hover {
-      background-color: #0056b3;
-    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Header, Subtitle, Explanation -->
+  <!-- Hardware Lease Calculator Section -->
+  <div class="container" id="hardwareLeaseContainer">
+    <h1>Hardware Lease Calculator</h1>
+    <p class="subtitle">36 mo. Term.</p>
+    
+    <!-- Three-column header for Hardware Lease -->
+    <div class="stats-display" id="hardwareStats">
+      <div class="stat-item">
+        <span class="stat-title">Total Monthly Cost</span>
+        <span id="hardwareTotalCost" class="stat-value">---</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-title">Interest</span>
+        <span id="hardwareInterest" class="stat-value">---</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-title">Down Payment Required</span>
+        <span id="hardwareDown" class="stat-value">---</span>
+      </div>
+    </div>
+    
+    <!-- Hardware Lease Table -->
+    <table class="hardware-table">
+      <thead>
+        <tr>
+          <th>Products</th>
+          <th>Quantity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Kiosk -->
+        <tr>
+          <td>
+            <span class="product-name">Kiosk</span>
+            <span class="toggle-arrow" onclick="toggleDescription('desc-kiosk')">▼</span>
+          </td>
+          <td>
+            <input type="number" id="qty-kiosk" min="0" value="0" style="width: 60px;" />
+          </td>
+        </tr>
+        <tr id="desc-kiosk" class="description-row">
+          <td colspan="2">
+            An interactive, self-service terminal designed to captivate visitors. Featuring a high-resolution touch display, the Kiosk lets customers easily purchase credits and receive their player cards with a smooth, intuitive experience.
+          </td>
+        </tr>
+        <!-- Reader -->
+        <tr>
+          <td>
+            <span class="product-name">Reader</span>
+            <span class="toggle-arrow" onclick="toggleDescription('desc-reader')">▼</span>
+          </td>
+          <td>
+            <input type="number" id="qty-reader" min="0" value="0" style="width: 60px;" />
+          </td>
+        </tr>
+        <tr id="desc-reader" class="description-row">
+          <td colspan="2">
+            A compact, reliable scanning device optimized for Tap 'N Play. Leveraging advanced NFC technology, the Reader quickly initiates gameplay and is ideal for arcade settings.
+            <br /><em>*Required: One Reader per player station.*</em>
+          </td>
+        </tr>
+        <!-- Enrollment Reader -->
+        <tr>
+          <td>
+            <span class="product-name">Enrollment Reader</span>
+            <span class="toggle-arrow" onclick="toggleDescription('desc-enroll')">▼</span>
+          </td>
+          <td>
+            <input type="number" id="qty-enrollment" min="0" value="0" style="width: 60px;" />
+          </td>
+        </tr>
+        <tr id="desc-enroll" class="description-row">
+          <td colspan="2">
+            Secure and efficient, this device streamlines account capture for enrollment and registration. Simply scan a player card to launch or create a new account within seconds.
+            <br /><em>*Recommended: One Per POS Station.*</em>
+          </td>
+        </tr>
+        <!-- Mobile Redemption Terminal -->
+        <tr>
+          <td>
+            <span class="product-name">Mobile Redemption Terminal</span>
+            <span class="toggle-arrow" onclick="toggleDescription('desc-mobile')">▼</span>
+          </td>
+          <td>
+            <input type="number" id="qty-mobile" min="0" value="0" style="width: 60px;" />
+          </td>
+        </tr>
+        <tr id="desc-mobile" class="description-row">
+          <td colspan="2">
+            Designed for efficiency and ease-of-use, its responsive interface accelerates the redemption process—making it perfect for players to redeem their tickets quickly.
+            <br /><em>*Recommended: One Per employee working at the redemption counter.*</em>
+          </td>
+        </tr>
+        <!-- Router w/ Cellular Failover -->
+        <tr>
+          <td>
+            <span class="product-name">Router w/ Cellular Failover</span>
+            <span class="toggle-arrow" onclick="toggleDescription('desc-router')">▼</span>
+          </td>
+          <td>
+            <input type="number" id="qty-router" min="0" value="0" style="width: 60px;" />
+          </td>
+        </tr>
+        <tr id="desc-router" class="description-row">
+          <td colspan="2">
+            Ensures uninterrupted connectivity by seamlessly switching to cellular backup if the primary network fails. With robust security and intelligent failover, it’s engineered for mission-critical environments demanding constant uptime.
+          </td>
+        </tr>
+        <!-- Access Point -->
+        <tr>
+          <td>
+            <span class="product-name">Access Point</span>
+            <span class="toggle-arrow" onclick="toggleDescription('desc-access')">▼</span>
+          </td>
+          <td>
+            <input type="number" id="qty-access" min="0" value="0" style="width: 60px;" />
+          </td>
+        </tr>
+        <tr id="desc-access" class="description-row">
+          <td colspan="2">
+            Delivers high-speed, scalable wireless connectivity across indoor and outdoor spaces. Featuring advanced signal management and top-tier security, it ensures a stable network even in dense environments.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <!-- ENTER Button and Disclaimer (initially hidden) -->
+    <button class="calc-button" id="hardwareEnterButton" onclick="calculateHardwareLease()">ENTER</button>
+    <p class="disclaimer" id="hardwareDisclaimer" style="display: none;">
+      Our lease is always offered with 0% interest at 0% Down!
+    </p>
+  </div>
+
+  <!-- Software and Service Fee Calculator Section (Existing) -->
+  <div class="container" id="softwareFeeContainer">
     <h1>Software and Service Fee Calculator</h1>
     <p class="subtitle">Select your estimated monthly revenue below</p>
     <p class="explanation">
       The Software and Service Fee is 5% of Revenue<br />
       • A minimum of $10/month or maximum of $20/month per active Reader will be imposed for the monthly Software and Service fee.
     </p>
-
     <!-- Centered Readers Input -->
     <div class="reader-input">
       <label for="numReaders">Enter Number of Readers:</label>
       <input type="number" id="numReaders" min="1" value="5" />
     </div>
-
     <!-- Three-Column Stats Display -->
     <div class="stats-display">
       <div class="stat-item">
@@ -227,28 +350,64 @@
         <span id="monthlyCostPerReaderDisplay" class="stat-value">$0</span>
       </div>
     </div>
-
-    <!-- Slider -->
+    <!-- Large Slider with dynamic tick marks -->
     <div class="slider-wrapper">
       <input type="range" id="monthlyRevenue" step="100" value="0" />
       <div id="sliderMarks" class="slider-marks"></div>
     </div>
-
-    <!-- Toggle Button & Calculations Info -->
-    <button id="toggleCalcButton">Click here to see our calculations</button>
-    <div id="calcContainer">
-      <p><strong>5% of Revenue:</strong> The fee is calculated as 5% of your monthly revenue (Fee = 0.05 × Monthly Revenue).</p>
-      <p><strong>Minimum and Maximum Thresholds:</strong> A minimum fee of $10 per reader and a maximum fee of $20 per reader apply. These thresholds are determined as follows:</p>
-      <p class="subinfo"><strong>Min. per Reader:</strong> $10</p>
-      <p class="subinfo"><strong>Max. per Reader:</strong> $20</p>
-      <p>&nbsp;&nbsp;Minimum Threshold (Monthly Revenue) = (Number of Readers × $10) / 0.05</p>
-      <p>&nbsp;&nbsp;Maximum Threshold (Monthly Revenue) = (Number of Readers × $20) / 0.05</p>
-      <p><strong>Monthly Fee per Reader & Total Monthly Fee:</strong> The fee per reader is computed as (Monthly Revenue × 0.05) divided by the Number of Readers. It is then capped between $10 and $20 per reader, and the Total Monthly Fee is this per‑reader fee multiplied by the Number of Readers.</p>
-    </div>
   </div>
 
   <script>
-    // Helper: format tick values; abbreviate values over 1000 with "k"
+    // --- Hardware Lease Calculator Functions ---
+    // Toggle the visibility of product descriptions.
+    function toggleDescription(id) {
+      var descRow = document.getElementById(id);
+      if (descRow.style.display === "table-row") {
+        descRow.style.display = "none";
+      } else {
+        descRow.style.display = "table-row";
+      }
+    }
+
+    // Calculate the total monthly cost for hardware lease.
+    function calculateHardwareLease() {
+      // Rates per product:
+      const rates = {
+        kiosk: 260,
+        reader: 10,
+        enrollment: 10,
+        mobile: 24,
+        router: 42,
+        access: 15
+      };
+
+      // Retrieve quantities. Ensure they are numbers (default to 0 if not provided).
+      var qtyKiosk = parseInt(document.getElementById("qty-kiosk").value) || 0;
+      var qtyReader = parseInt(document.getElementById("qty-reader").value) || 0;
+      var qtyEnrollment = parseInt(document.getElementById("qty-enrollment").value) || 0;
+      var qtyMobile = parseInt(document.getElementById("qty-mobile").value) || 0;
+      var qtyRouter = parseInt(document.getElementById("qty-router").value) || 0;
+      var qtyAccess = parseInt(document.getElementById("qty-access").value) || 0;
+      
+      // Calculate Total Monthly Cost as the sum of (rate * quantity) for each product.
+      var totalCost = (rates.kiosk * qtyKiosk) +
+                      (rates.reader * qtyReader) +
+                      (rates.enrollment * qtyEnrollment) +
+                      (rates.mobile * qtyMobile) +
+                      (rates.router * qtyRouter) +
+                      (rates.access * qtyAccess);
+      
+      // Update the stats display.
+      document.getElementById("hardwareTotalCost").innerText = "$" + totalCost.toFixed(2);
+      document.getElementById("hardwareInterest").innerText = "0%";
+      document.getElementById("hardwareDown").innerText = "$0.00";
+      
+      // Reveal the disclaimer.
+      document.getElementById("hardwareDisclaimer").style.display = "block";
+    }
+
+    // --- Software and Service Fee Calculator Functions (Existing) ---
+    // (Reusing the existing function from the previous code.)
     function formatTick(value) {
       if (value < 1000) {
         return `$${value}`;
@@ -265,20 +424,14 @@
         numReaders = 1;
         document.getElementById('numReaders').value = 1;
       }
-
       // Pricing parameters
       const feePercentage = 0.05;
       const minPerReader = 10;
       const maxPerReader = 20;
-
-      // Compute revenue thresholds where fee per reader caps apply
+      // Compute revenue thresholds where fee per reader caps are reached
       let minThreshold = (minPerReader * numReaders) / feePercentage;
       let maxThreshold = (maxPerReader * numReaders) / feePercentage;
-
       // Determine scaling based on reader count:
-      // ≤ 49: extension = $500, tick interval = $500.
-      // 50–99: extension = $1,000, tick interval = $1,000.
-      // ≥ 100: base extension/tick = $2,000 (for 100–149), plus $1,000 for every extra 50 readers.
       let rangeExtension = 500;
       let tickInterval = 500;
       if (numReaders < 50) {
@@ -292,7 +445,6 @@
         rangeExtension = 2000 + extraGroups * 1000;
         tickInterval = 2000 + extraGroups * 1000;
       }
-
       // Dynamically set slider range.
       let sliderMin = minThreshold - rangeExtension;
       let sliderMax = maxThreshold + rangeExtension;
@@ -300,7 +452,6 @@
       const slider = document.getElementById('monthlyRevenue');
       slider.min = sliderMin;
       slider.max = sliderMax;
-
       // Ensure the current slider value is within bounds.
       let currentRevenue = parseFloat(slider.value);
       if (currentRevenue < sliderMin) {
@@ -310,18 +461,15 @@
         currentRevenue = sliderMax;
         slider.value = sliderMax;
       }
-
-      // Calculate fee per reader (5% of revenue divided by the number of readers, then capped).
+      // Calculate fee per reader (5% of monthly revenue divided by the number of readers, then capped).
       let feePerReader = (currentRevenue * feePercentage) / numReaders;
       if (feePerReader < minPerReader) feePerReader = minPerReader;
       if (feePerReader > maxPerReader) feePerReader = maxPerReader;
       let totalCost = feePerReader * numReaders;
-
       // Update the stats display.
       document.getElementById('revenueDisplayValue').innerText = `$${currentRevenue.toLocaleString()}`;
       document.getElementById('monthlyCostDisplay').innerText = `$${totalCost.toFixed(2)}`;
       document.getElementById('monthlyCostPerReaderDisplay').innerText = `$${feePerReader.toFixed(2)}`;
-
       // Generate slider tick marks.
       const sliderMarksContainer = document.getElementById('sliderMarks');
       sliderMarksContainer.innerHTML = "";
@@ -352,24 +500,12 @@
         sliderMarksContainer.appendChild(mark);
       }
     }
-
-    // Event listeners for dynamic updates.
+    
+    // Event listeners for Software Fee Calculator (if needed)
     document.getElementById('monthlyRevenue').addEventListener("input", updateCalculator);
     document.getElementById('numReaders').addEventListener("input", updateCalculator);
-
-    // Toggle for Calculation Details.
-    document.getElementById("toggleCalcButton").addEventListener("click", function () {
-      const calcContainer = document.getElementById("calcContainer");
-      if (calcContainer.style.display === "none" || calcContainer.style.display === "") {
-        calcContainer.style.display = "block";
-        this.innerText = "Hide calculations";
-      } else {
-        calcContainer.style.display = "none";
-        this.innerText = "Click here to see our calculations";
-      }
-    });
-
-    // Initialize on page load.
+    
+    // Initialize Software Fee Calculator on page load.
     updateCalculator();
   </script>
 </body>
